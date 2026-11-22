@@ -217,15 +217,22 @@ class WifiSetupActivity : AppCompatActivity() {
     }
 
     private fun onCameraJoined(cam: Found) {
-        prefs.edit().putString("ip", cam.ip).apply()
+        val store = CameraStore(this)
+        val u = user()
+        val pw = pass()
+        val existing = store.findByIp(cam.ip)
+        val saved = if (existing != null) {
+            existing.user = u; existing.pass = pw; existing.streamUrl = null; existing
+        } else Camera(name = cam.model?.takeIf { it != "IP camera" } ?: store.nextName(), ip = cam.ip, user = u, pass = pw)
+        store.upsert(saved)
+        store.lastId = saved.id
         stopSmartLink()
         smartStatus?.text = "✓ Camera joined your Wi‑Fi at ${cam.ip}" + (cam.model?.let { " ($it)" } ?: "") + "."
         MaterialAlertDialogBuilder(this)
             .setTitle("Camera connected")
             .setMessage("Your camera is now on \"${ssidEdit.text}\" at ${cam.ip}.")
             .setPositiveButton("View camera") { _, _ ->
-                startActivity(Intent(this, ViewerActivity::class.java)
-                    .putExtra("ip", cam.ip).putExtra("user", user()).putExtra("pass", pass()))
+                startActivity(Intent(this, ViewerActivity::class.java).putExtra("camId", saved.id))
                 finish()
             }
             .setNegativeButton("Close", null)
@@ -316,6 +323,7 @@ class WifiSetupActivity : AppCompatActivity() {
                 return@launch
             }
             prefs.edit().putString("user", user()).putString("pass", pass()).putString("home_ssid", ssid).apply()
+            intent.getStringExtra("camId")?.let { id -> CameraStore(this@WifiSetupActivity).update(id) { c -> c.streamUrl = null } }
             status.text = "Saved. Restarting the camera…"
             withContext(Dispatchers.IO) { cam.rebootQuietly() }
             delay(500)

@@ -24,6 +24,12 @@ class SetupActivity : AppCompatActivity() {
     private lateinit var user: String
     private lateinit var pass: String
     private var cfg: CameraConfig? = null
+    private lateinit var store: CameraStore
+    private var camId: String? = null
+    private lateinit var sdText: TextView
+    private lateinit var recSw: MaterialSwitch
+    private var recSwBusy = false
+    private var segmentSec = 600
 
     private lateinit var status: TextView
     private lateinit var infoText: TextView
@@ -37,9 +43,12 @@ class SetupActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        ip = intent.getStringExtra("ip") ?: ""
-        user = intent.getStringExtra("user") ?: "admin"
-        pass = intent.getStringExtra("pass") ?: "admin"
+        store = CameraStore(this)
+        val cam = store.get(intent.getStringExtra("camId"))
+        camId = cam?.id
+        ip = cam?.ip ?: intent.getStringExtra("ip") ?: ""
+        user = cam?.user ?: intent.getStringExtra("user") ?: "admin"
+        pass = cam?.pass ?: intent.getStringExtra("pass") ?: "admin"
         buildUi()
         load()
     }
@@ -57,6 +66,31 @@ class SetupActivity : AppCompatActivity() {
         controls.alpha = 0.4f
         root.addView(controls)
 
+        // SD card & recording
+        controls.addView(Ui.header(c, "SD card recording"))
+        sdText = Ui.note(c, "Checking SD card…")
+        controls.addView(sdText)
+        recSw = MaterialSwitch(c).apply { text = "Record continuously in HD" }
+        controls.addView(Ui.full(recSw))
+        recSw.setOnCheckedChangeListener { _, on ->
+            if (recSwBusy) return@setOnCheckedChangeListener
+            val seg = segmentSec
+            act { it.setContinuousRecording(on, hd = true, segmentSec = seg) }
+        }
+        controls.addView(Ui.note(c, "Recording file length"))
+        controls.addView(Ui.row(c,
+            Ui.button(c, "5 min", outlined = true) { segmentSec = 300; if (recSw.isChecked) act { it.setContinuousRecording(true, true, 300) } else toast("5-minute files") },
+            Ui.button(c, "10 min", outlined = true) { segmentSec = 600; if (recSw.isChecked) act { it.setContinuousRecording(true, true, 600) } else toast("10-minute files") },
+            Ui.button(c, "15 min", outlined = true) { segmentSec = 900; if (recSw.isChecked) act { it.setContinuousRecording(true, true, 900) } else toast("15-minute files") }
+        ))
+        controls.addView(Ui.row(c,
+            Ui.button(c, "View recordings") {
+                camId?.let { startActivity(Intent(c, RecordingsActivity::class.java).putExtra("camId", it)) }
+                    ?: toast("Add this camera from the home screen first")
+            },
+            Ui.button(c, "Format SD card", outlined = true) { confirmFormat() }
+        ))
+
         // Device info
         controls.addView(Ui.header(c, "Device"))
         infoText = Ui.note(c, "")
@@ -71,7 +105,7 @@ class SetupActivity : AppCompatActivity() {
         controls.addView(Ui.note(c, "Move the camera to a different Wi‑Fi network or update the Wi‑Fi password."))
         controls.addView(Ui.full(Ui.button(c, "Change camera Wi‑Fi", outlined = true) {
             startActivity(Intent(c, WifiSetupActivity::class.java)
-                .putExtra("ip", ip).putExtra("user", user).putExtra("pass", pass))
+                .putExtra("ip", ip).putExtra("user", user).putExtra("pass", pass).putExtra("camId", camId))
         }))
 
         // Password
@@ -92,6 +126,7 @@ class SetupActivity : AppCompatActivity() {
                     if (o.ok) {
                         pass = a
                         prefs.edit().putString("pass", a).apply()
+                        camId?.let { id -> store.update(id) { c -> c.pass = a; c.streamUrl = null } }
                     }
                     o
                 }
@@ -179,6 +214,7 @@ class SetupActivity : AppCompatActivity() {
             pic.saturation?.let { saturation.value = it.coerceIn(0, 100).toFloat() }
             pic.flip?.let { flipSw.isChecked = it }
             pic.mirror?.let { mirrorSw.isChecked = it }
+            refreshSd(cam)
             setEnabledAll(true)
         }
     }
@@ -193,7 +229,33 @@ class SetupActivity : AppCompatActivity() {
             addLog((if (o.ok) "✓ " else "✗ ") + o.message)
             toast(o.message)
             setEnabledAll(true)
+            if (o.message.contains("recording", true)) refreshSd(cam)
         }
+    }
+
+    private fun refreshSd(cam: CameraConfig) {
+        lifecycleScope.launch {
+            val sd = withContext(Dispatchers.IO) { runCatching { cam.sdInfo() }.getOrNull() }
+            val rec = withContext(Dispatchers.IO) { runCatching { cam.recordingState() }.getOrNull() }
+            sdText.text = (sd?.describe() ?: "SD card status unknown") +
+                    (rec?.let { r -> "\nRecording: " + if (r.enabled) "on · ${if (r.channel == 12) "SD" else "HD"} · ${(r.segmentSec ?: 600) / 60}-min files" else "off" } ?: "")
+            rec?.segmentSec?.let { segmentSec = it }
+            recSwBusy = true
+            recSw.isChecked = rec?.enabled == true
+            recSwBusy = false
+        }
+    }
+
+    private fun confirmFormat() {
+        MaterialAlertDialogBuilder(this)
+            .setTitle("Format SD card?")
+            .setMessage("This permanently erases every recording on the camera's SD card.")
+            .setPositiveButton("Erase and format") { _, _ ->
+                act { it.formatSd() }
+                lifecycleScope.launch { kotlinx.coroutines.delay(8000); cfg?.let { refreshSd(it) } }
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
     }
 
     private fun confirmReboot() {

@@ -1,19 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/root"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#000000"
-    android:fitsSystemWindows="true"
-    android:keepScreenOn="true"
-    android:orientation="vertical">
+    android:keepScreenOn="true">
 
     <FrameLayout
-        android:id="@+id/videoFrame"
+        android:id="@+id/zoomLayer"
         android:layout_width="match_parent"
-        android:layout_height="240dp"
-        android:background="#000000">
+        android:layout_height="match_parent">
 
         <androidx.media3.ui.PlayerView
             android:id="@+id/playerView"
@@ -30,136 +27,178 @@
             android:layout_height="match_parent"
             android:scaleType="fitCenter"
             android:visibility="gone" />
-
-        <TextView
-            android:id="@+id/statusText"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="bottom|start"
-            android:layout_margin="8dp"
-            android:background="#99000000"
-            android:padding="6dp"
-            android:textColor="#FFFFFF"
-            android:textSize="12sp" />
     </FrameLayout>
 
-    <LinearLayout
-        android:id="@+id/controls"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="#121212"
+    <ProgressBar
+        android:id="@+id/spinner"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_gravity="center"
+        android:indeterminateTint="#FFFFFF" />
+
+    <TextView
+        android:id="@+id/recBadge"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top|end"
+        android:layout_marginTop="64dp"
+        android:layout_marginEnd="16dp"
+        android:background="#99000000"
+        android:paddingStart="8dp"
+        android:paddingTop="2dp"
+        android:paddingEnd="8dp"
+        android:paddingBottom="2dp"
+        android:text="● REC SD"
+        android:textColor="#FF5252"
+        android:textSize="12sp"
+        android:textStyle="bold"
+        android:visibility="gone" />
+
+    <TextView
+        android:id="@+id/statusText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal|bottom"
+        android:layout_marginBottom="88dp"
+        android:background="#AA000000"
         android:gravity="center"
-        android:orientation="vertical"
-        android:padding="12dp">
+        android:maxWidth="420dp"
+        android:padding="8dp"
+        android:textColor="#FFFFFF"
+        android:textSize="13sp" />
 
-        <TextView
-            android:id="@+id/camTitle"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="8dp"
-            android:textColor="#BBBBBB" />
-
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal">
-            <Space android:layout_width="76dp" android:layout_height="76dp" />
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnUp"
-                android:layout_width="76dp" android:layout_height="76dp"
-                android:insetTop="0dp" android:insetBottom="0dp"
-                android:text="▲" android:textSize="24sp" />
-            <Space android:layout_width="76dp" android:layout_height="76dp" />
-        </LinearLayout>
+    <!-- Overlay controls (tap the video to show/hide) -->
+    <FrameLayout
+        android:id="@+id/overlay"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
 
         <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal">
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnLeft"
-                android:layout_width="76dp" android:layout_height="76dp"
-                android:insetTop="0dp" android:insetBottom="0dp"
-                android:text="◀" android:textSize="24sp" />
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnStop"
-                style="@style/Widget.Material3.Button.OutlinedButton"
-                android:layout_width="76dp" android:layout_height="76dp"
-                android:insetTop="0dp" android:insetBottom="0dp"
-                android:text="■" android:textSize="20sp" />
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnRight"
-                android:layout_width="76dp" android:layout_height="76dp"
-                android:insetTop="0dp" android:insetBottom="0dp"
-                android:text="▶" android:textSize="24sp" />
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal">
-            <Space android:layout_width="76dp" android:layout_height="76dp" />
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnDown"
-                android:layout_width="76dp" android:layout_height="76dp"
-                android:insetTop="0dp" android:insetBottom="0dp"
-                android:text="▼" android:textSize="24sp" />
-            <Space android:layout_width="76dp" android:layout_height="76dp" />
-        </LinearLayout>
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            android:layout_marginBottom="12dp"
-            android:text="Hold an arrow to pan / tilt"
-            android:textColor="#888888"
-            android:textSize="12sp" />
-
-        <LinearLayout
+            android:id="@+id/topBar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal">
+            android:layout_gravity="top"
+            android:background="#88000000"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingStart="8dp"
+            android:paddingEnd="8dp">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnBack"
+                style="@style/OverlayButton"
+                android:contentDescription="Cameras"
+                android:text="☰" />
+
+            <TextView
+                android:id="@+id/camTitle"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:ellipsize="end"
+                android:maxLines="1"
+                android:paddingStart="4dp"
+                android:textColor="#FFFFFF"
+                android:textSize="16sp"
+                android:textStyle="bold" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnRecordings"
+                style="@style/OverlayButton"
+                android:contentDescription="Recordings"
+                android:text="🎞" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnSettings"
+                style="@style/OverlayButton"
+                android:contentDescription="Camera settings"
+                android:text="⚙" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/bottomBar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom"
+            android:background="#88000000"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingStart="8dp"
+            android:paddingEnd="8dp">
+
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnSnap"
-                style="@style/Widget.Material3.Button.TonalButton"
-                android:layout_width="0dp" android:layout_height="wrap_content"
-                android:layout_weight="1" android:layout_marginEnd="4dp"
-                android:text="Photo" />
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnQuality"
-                style="@style/Widget.Material3.Button.TonalButton"
-                android:layout_width="0dp" android:layout_height="wrap_content"
-                android:layout_weight="1" android:layout_marginEnd="4dp"
-                android:text="HD/SD" />
+                style="@style/OverlayButton"
+                android:contentDescription="Take photo"
+                android:text="📷" />
+
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnMute"
-                style="@style/Widget.Material3.Button.TonalButton"
-                android:layout_width="0dp" android:layout_height="wrap_content"
-                android:layout_weight="1" android:layout_marginEnd="4dp"
-                android:text="Mute" />
+                style="@style/OverlayButton"
+                android:contentDescription="Mute"
+                android:text="🔊" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnQuality"
+                style="@style/OverlayButton"
+                android:contentDescription="Stream quality"
+                android:text="HD" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnPtz"
+                style="@style/OverlayButton"
+                android:contentDescription="Pan and tilt controls"
+                android:text="✥" />
+
+            <Space
+                android:layout_width="0dp"
+                android:layout_height="1dp"
+                android:layout_weight="1" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnRotate"
+                style="@style/OverlayButton"
+                android:contentDescription="Rotate"
+                android:text="⟳" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnPip"
+                style="@style/OverlayButton"
+                android:contentDescription="Picture in picture"
+                android:text="⧉" />
+
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnReconnect"
-                style="@style/Widget.Material3.Button.TonalButton"
-                android:layout_width="0dp" android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="Retry" />
+                style="@style/OverlayButton"
+                android:contentDescription="Reconnect"
+                android:text="↻" />
         </LinearLayout>
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnSettings"
-            style="@style/Widget.Material3.Button.OutlinedButton"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="6dp"
-            android:text="Camera settings" />
-
-        <TextView
+        <!-- Pan / tilt pad -->
+        <LinearLayout
+            android:id="@+id/ptzPad"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="10dp"
-            android:text="Rotate the phone for full screen"
-            android:textColor="#666666"
-            android:textSize="12sp" />
-    </LinearLayout>
-</LinearLayout>
+            android:layout_gravity="end|bottom"
+            android:layout_marginEnd="16dp"
+            android:layout_marginBottom="72dp"
+            android:orientation="vertical">
+
+            <LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content" android:orientation="horizontal">
+                <Space android:layout_width="56dp" android:layout_height="56dp" />
+                <com.google.android.material.button.MaterialButton android:id="@+id/btnUp" style="@style/PadButton" android:text="▲" android:contentDescription="Tilt up" />
+                <Space android:layout_width="56dp" android:layout_height="56dp" />
+            </LinearLayout>
+            <LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content" android:orientation="horizontal">
+                <com.google.android.material.button.MaterialButton android:id="@+id/btnLeft" style="@style/PadButton" android:text="◀" android:contentDescription="Pan left" />
+                <Space android:layout_width="56dp" android:layout_height="56dp" />
+                <com.google.android.material.button.MaterialButton android:id="@+id/btnRight" style="@style/PadButton" android:text="▶" android:contentDescription="Pan right" />
+            </LinearLayout>
+            <LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content" android:orientation="horizontal">
+                <Space android:layout_width="56dp" android:layout_height="56dp" />
+                <com.google.android.material.button.MaterialButton android:id="@+id/btnDown" style="@style/PadButton" android:text="▼" android:contentDescription="Tilt down" />
+                <Space android:layout_width="56dp" android:layout_height="56dp" />
+            </LinearLayout>
+        </LinearLayout>
+    </FrameLayout>
+</FrameLayout>

@@ -21,13 +21,27 @@ jobs:
 
       - uses: gradle/actions/setup-gradle@v4
 
+      - name: Restore signing key
+        env:
+          KEYSTORE_B64: ${{ secrets.KEYSTORE_B64 }}
+        run: |
+          if [ -n "$KEYSTORE_B64" ]; then
+            echo "$KEYSTORE_B64" | base64 -d > "$RUNNER_TEMP/release.jks"
+            echo "KEYSTORE_FILE=$RUNNER_TEMP/release.jks" >> "$GITHUB_ENV"
+            echo "Using permanent release key"
+          else
+            echo "No release key configured; using debug signing"
+          fi
+
       - name: Build
+        env:
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
         run: |
           chmod +x gradlew
-          ./gradlew assembleDebug --no-daemon --stacktrace
+          ./gradlew assembleRelease --no-daemon --stacktrace
 
       - name: Rename APK
-        run: cp app/build/outputs/apk/debug/app-debug.apk D3DCamViewer.apk
+        run: cp app/build/outputs/apk/release/app-release.apk D3DCamViewer.apk
 
       - uses: actions/upload-artifact@v4
         with:
@@ -37,8 +51,8 @@ jobs:
       - name: Publish release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v1.2.${{ github.run_number }}
-          name: D3D Cam Viewer v1.2.${{ github.run_number }}
+          tag_name: v2.0.${{ github.run_number }}
+          name: D3D Cam Viewer v2.0.${{ github.run_number }}
           body: Tap D3DCamViewer.apk below to download, then open it to install.
           files: D3DCamViewer.apk
           make_latest: true

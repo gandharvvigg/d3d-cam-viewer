@@ -260,6 +260,105 @@ class CameraConfig(
         return summarize("Video quality", tried)
     }
 
+    // ---------- SD card & recording ----------
+
+    data class SdInfo(val present: Boolean?, val status: String?, val totalMb: Long?, val freeMb: Long?) {
+        fun describe(): String {
+            if (present == false) return "No SD card detected"
+            val parts = mutableListOf<String>()
+            status?.takeIf { it.isNotBlank() }?.let { parts += it }
+            if (totalMb != null && totalMb > 0) {
+                val free = freeMb?.let { "%.1f GB free of ".format(it / 1024.0) } ?: ""
+                parts += free + "%.1f GB".format(totalMb / 1024.0)
+            }
+            return if (parts.isEmpty()) "SD card status unknown" else parts.joinToString(" · ")
+        }
+    }
+
+    /** Camera reports space in KB on most firmware; convert to MB. */
+    private fun toMb(v: String?): Long? {
+        val n = v?.trim()?.toLongOrNull() ?: return null
+        return when {
+            n > 4_000_000 -> n / 1024          // KB
+            else -> n                          // already MB
+        }
+    }
+
+    fun sdInfo(): SdInfo {
+        hi("getserverinfo")?.takeIf { hiOk(it) }?.let { r ->
+            val v = parseVars(r.text)
+            val status = v["sdstatus"]
+            val total = toMb(v["sdtotalspace"] ?: v["sdtotal"])
+            val free = toMb(v["sdfreespace"] ?: v["sdfree"])
+            val present = when {
+                status == null -> null
+                status.contains("out", true) || status.contains("no", true) || status == "0" -> false
+                else -> true
+            }
+            if (status != null || total != null) return SdInfo(present, status, total, free)
+        }
+        vs("get_status.cgi")?.takeIf { vsOk(it) }?.let { r ->
+            val v = parseVars(r.text)
+            val st = v["sdstatus"]
+            return SdInfo(st?.let { it != "0" }, when (st) { "0" -> "No card"; "1" -> "Ready"; "2" -> "Recording"; else -> st },
+                v["sdtotal"]?.toLongOrNull(), v["sdfree"]?.toLongOrNull())
+        }
+        return SdInfo(null, null, null, null)
+    }
+
+    data class RecordingState(val enabled: Boolean, val channel: Int?, val segmentSec: Int?)
+
+    fun recordingState(): RecordingState? {
+        hi("getplanrecattr")?.takeIf { hiOk(it) }?.let { r ->
+            val v = parseVars(r.text)
+            val en = v["planrec_enable"] ?: v["enable"]
+            return RecordingState(en == "1", (v["planrec_chn"] ?: v["chn"])?.toIntOrNull(),
+                (v["planrec_time"] ?: v["duration"])?.toIntOrNull())
+        }
+        return null
+    }
+
+    /**
+     * Continuous recording to the SD card. [hd] records the main (HD) stream;
+     * [segmentSec] is the length of each file (15–900 s).
+     */
+    fun setContinuousRecording(enable: Boolean, hd: Boolean = true, segmentSec: Int = 600): Outcome {
+        val tried = mutableListOf<Pair<String, Boolean>>()
+        if (hiBase != null) {
+            val chn = if (hd) 11 else 12
+            val seg = segmentSec.coerceIn(15, 900)
+            val a = hiOk(hi("setplanrecattr", "&-planrec_enable=${if (enable) 1 else 0}&-planrec_time=$seg&-planrec_chn=$chn"))
+            if (enable) {
+                // Record every half-hour slot of every day.
+                val all = "P".repeat(48)
+                val days = (0..6).joinToString("") { "&-week$it=$all" }
+                hiOk(hi("setscheduleex", "&-ename=plan$days"))
+            }
+            tried += "Hi3510" to a
+        }
+        if (vsBase != null) {
+            tried += "VStarcam" to vsOk(vs("set_recordsch.cgi", "record_schedule_enable=${if (enable) 1 else 0}&record_cover=1&record_timer=${segmentSec / 60}"))
+        }
+        val o = summarize("Continuous recording", tried)
+        return if (o.ok) Outcome(true, if (enable) "Continuous ${if (hd) "HD " else ""}recording to the SD card is on. When the card is full, the oldest recordings are replaced."
+        else "Continuous recording is off.") else o
+    }
+
+    fun formatSd(): Outcome {
+        val tried = mutableListOf<Pair<String, Boolean>>()
+        hiBase?.let { b ->
+            val r = Net.get("$b/sdfrmt.cgi?-usr=${u()}&-pwd=${p()}", user, pass, 60_000)
+            tried += "Hi3510" to (r != null && r.code == 200 && !r.text.contains("[Error]", true))
+        }
+        if (vsBase != null) tried += "VStarcam" to vsOk(vs("set_formatsd.cgi"))
+        val o = summarize("Format SD card", tried)
+        return if (o.ok) Outcome(true, "SD card formatted. All recordings were erased.") else o
+    }
+
+    /** Base URLs the SD card can be browsed at. */
+    val sdRoots: List<String>
+        get() = httpPorts.map { "http://$ip:$it/sd/" }
+
     // ---------- tools ----------
 
     fun syncTime(): Outcome {
