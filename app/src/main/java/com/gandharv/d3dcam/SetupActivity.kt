@@ -95,8 +95,11 @@ class SetupActivity : AppCompatActivity() {
         controls.addView(Ui.header(c, "Device"))
         infoText = Ui.note(c, "")
         controls.addView(infoText)
+        controls.addView(Ui.full(Ui.button(c, "Set time automatically (internet)") { act { it.enableAutoTime() } }))
+        controls.addView(Ui.note(c, "The camera has no clock battery, so it forgets the time after a power cut. " +
+                "Automatic time makes it fetch the correct time itself on every start — your router must give it internet access."))
         controls.addView(Ui.row(c,
-            Ui.button(c, "Sync time with phone", outlined = true) { act { it.syncTime() } },
+            Ui.button(c, "Sync time with phone now", outlined = true) { act { it.syncTime() } },
             Ui.button(c, "Restart camera", outlined = true) { confirmReboot() }
         ))
 

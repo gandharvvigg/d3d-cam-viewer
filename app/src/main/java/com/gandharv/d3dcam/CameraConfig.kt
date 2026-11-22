@@ -377,6 +377,27 @@ class CameraConfig(
         return summarize("Time", tried)
     }
 
+    /**
+     * Makes the camera set its own clock from an internet time server every time it starts
+     * (and periodically), in the phone's time zone. Also sets the time right now.
+     */
+    fun enableAutoTime(server: String = "in.pool.ntp.org"): Outcome {
+        val tried = mutableListOf<Pair<String, Boolean>>()
+        val tz = TimeZone.getDefault()
+        if (hiBase != null) {
+            val t = SimpleDateFormat("yyyy.MM.dd.HH.mm.ss", Locale.US).format(Date())
+            hi("setservertime", "&-time=$t&-timezone=${Net.enc(tz.id)}&-dstmode=off")
+            tried += "Hi3510" to hiOk(hi("setntpattr", "&-ntpenable=1&-ntpserver=${Net.enc(server)}&-ntpinterval=1"))
+        }
+        if (vsBase != null) {
+            val now = System.currentTimeMillis() / 1000
+            tried += "VStarcam" to vsOk(vs("set_datetime.cgi", "now=$now&tz=${-tz.rawOffset / 1000}&ntp_enable=1&ntp_svr=${Net.enc(server)}"))
+        }
+        if (onvif != null) tried += "ONVIF" to onvif.enableNtp(server)
+        val o = summarize("Automatic time", tried)
+        return if (o.ok) Outcome(true, "Automatic time is on. The camera will get the correct time from the internet ($server) every time it starts.") else o
+    }
+
     fun reboot(): Outcome {
         val tried = mutableListOf<Pair<String, Boolean>>()
         hiBase?.let { b ->

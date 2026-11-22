@@ -126,6 +126,19 @@ class Onvif private constructor(private val user: String, private var pass: Stri
         return soap(deviceUrl, body) != null
     }
 
+    /** Camera keeps its own clock from an internet time server, in the phone's time zone. */
+    fun enableNtp(server: String): Boolean {
+        val ntp = """<SetNTP xmlns="http://www.onvif.org/ver10/device/wsdl"><FromDHCP>false</FromDHCP><NTPManual><Type xmlns="http://www.onvif.org/ver10/schema">DNS</Type><DNSname xmlns="http://www.onvif.org/ver10/schema">$server</DNSname></NTPManual></SetNTP>"""
+        val a = soap(deviceUrl, ntp) != null
+        val tz = TimeZone.getDefault()
+        val offMin = tz.rawOffset / 60000
+        val sign = if (offMin >= 0) "-" else "+"
+        val posix = "UTC$sign${Math.abs(offMin) / 60}:${"%02d".format(Math.abs(offMin) % 60)}"
+        val dt = """<SetSystemDateAndTime xmlns="http://www.onvif.org/ver10/device/wsdl"><DateTimeType>NTP</DateTimeType><DaylightSavings>false</DaylightSavings><TimeZone><TZ xmlns="http://www.onvif.org/ver10/schema">$posix</TZ></TimeZone></SetSystemDateAndTime>"""
+        val b = soap(deviceUrl, dt) != null
+        return a || b
+    }
+
     fun reboot(): Boolean =
         soap(deviceUrl, """<SystemReboot xmlns="http://www.onvif.org/ver10/device/wsdl"/>""") != null
 
