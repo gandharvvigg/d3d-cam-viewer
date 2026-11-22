@@ -109,8 +109,14 @@ object Scanner {
         try {
             DatagramSocket().use { s ->
                 s.soTimeout = 400
+                s.broadcast = true
                 val group = InetAddress.getByName("239.255.255.250")
-                repeat(2) { s.send(DatagramPacket(msg, msg.size, group, port)) }
+                val bcast = InetAddress.getByName("255.255.255.255")
+                repeat(2) {
+                    try { s.send(DatagramPacket(msg, msg.size, group, port)) } catch (_: Exception) {}
+                    // HiChip firmware also answers its search on plain broadcast.
+                    if (port == 8002) try { s.send(DatagramPacket(msg, msg.size, bcast, port)) } catch (_: Exception) {}
+                }
                 val buf = ByteArray(65535)
                 val end = System.currentTimeMillis() + listenMs
                 while (System.currentTimeMillis() < end) {

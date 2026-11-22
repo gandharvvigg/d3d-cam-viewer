@@ -37,8 +37,8 @@ jobs:
       - name: Publish release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v1.1.${{ github.run_number }}
-          name: D3D Cam Viewer v1.1.${{ github.run_number }}
+          tag_name: v1.2.${{ github.run_number }}
+          name: D3D Cam Viewer v1.2.${{ github.run_number }}
           body: Tap D3DCamViewer.apk below to download, then open it to install.
           files: D3DCamViewer.apk
           make_latest: true
