@@ -35,6 +35,7 @@ class RecordingsActivity : AppCompatActivity() {
     private lateinit var list: RecyclerView
     private var all: List<Recording> = emptyList()
     private var shown: List<Recording> = emptyList()
+    private lateinit var latestBtn: com.google.android.material.button.MaterialButton
     private val timeFmt = SimpleDateFormat("HH:mm:ss", Locale.getDefault())
     private val dayFmtIn = SimpleDateFormat("yyyy-MM-dd", Locale.US)
     private val dayFmtOut = SimpleDateFormat("EEE d MMM", Locale.getDefault())
@@ -50,6 +51,9 @@ class RecordingsActivity : AppCompatActivity() {
         })
         status = Ui.note(c, "Reading the SD card…")
         root.addView(status)
+        latestBtn = Ui.button(c, "▶  Play latest recording") { playLatest() }
+        latestBtn.visibility = View.GONE
+        root.addView(Ui.full(latestBtn))
         progress = ProgressBar(c, null, android.R.attr.progressBarStyleHorizontal).apply { isIndeterminate = true }
         root.addView(Ui.full(progress))
         days = ChipGroup(c).apply { isSingleSelection = true; isSingleLine = true }
@@ -90,6 +94,7 @@ class RecordingsActivity : AppCompatActivity() {
                 return@launch
             }
             status.text = "${sd.describe()} · ${all.size} recordings"
+            latestBtn.visibility = View.VISIBLE
             showDays()
         }
     }
@@ -97,6 +102,7 @@ class RecordingsActivity : AppCompatActivity() {
     private fun showDays() {
         days.removeAllViews()
         val keys = all.map { it.dayKey }.distinct()
+            .sortedWith(compareBy<String> { it == "Unknown date" }.thenByDescending { it })
         keys.forEachIndexed { i, k ->
             val label = runCatching { dayFmtOut.format(dayFmtIn.parse(k)!!) }.getOrDefault(k)
             val chip = Chip(this).apply {
@@ -125,6 +131,17 @@ class RecordingsActivity : AppCompatActivity() {
             .putStringArrayListExtra("urls", ArrayList(ordered.map { it.url }))
             .putStringArrayListExtra("titles", ArrayList(ordered.map { title(it) }))
             .putExtra("index", pos))
+    }
+
+    /** Plays the newest recording of the newest day; "previous" steps back through that day. */
+    private fun playLatest() {
+        val day = all.firstOrNull()?.dayKey ?: return
+        if (shown.firstOrNull()?.dayKey != day) {
+            // Select the newest day's chip so the list matches what plays.
+            for (i in 0 until days.childCount) (days.getChildAt(i) as? Chip)?.let { if (i == 0) it.isChecked = true }
+            showDay(day)
+        }
+        play(0)
     }
 
     private fun title(r: Recording): String {

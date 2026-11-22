@@ -40,8 +40,17 @@ class SdBrowser(private val user: String, private val pass: String) {
     fun list(root: String, onProgress: (String) -> Unit = {}): List<Recording> {
         val out = mutableListOf<Recording>()
         crawl(root, root, 0, out, onProgress)
-        return out.sortedByDescending { it.start?.time ?: 0L }
+        // Newest first: by the time in the file name, then by the numbers in the folder/file path
+        // (dates and counters), so files with unreadable names still come out newest first.
+        return out.sortedWith(
+            compareByDescending<Recording> { it.start?.time ?: 0L }
+                .thenByDescending { pathKey(it.url) }
+                .thenByDescending { it.url }
+        )
     }
+
+    private fun pathKey(url: String): String =
+        Regex("""\d+""").findAll(url.substringAfter("/sd/")).joinToString("") { it.value.padStart(14, '0') }
 
     private fun crawl(root: String, url: String, depth: Int, out: MutableList<Recording>, onProgress: (String) -> Unit) {
         if (depth > 3) return
