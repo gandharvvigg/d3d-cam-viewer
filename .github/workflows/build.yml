@@ -55,8 +55,8 @@ jobs:
       - name: Publish release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v2.2.${{ github.run_number }}
-          name: HiCam Viewer v2.2.${{ github.run_number }}
+          tag_name: v2.3.${{ github.run_number }}
+          name: HiCam Viewer v2.3.${{ github.run_number }}
           body: |
             **HiCamViewer.apk** — tap to download and install on your phone.
             **HiCamViewer-playstore.aab** — upload this file to Google Play Console.

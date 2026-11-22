@@ -11,8 +11,8 @@ android {
         applicationId = "com.gandharv.hicamviewer"
         minSdk = 24
         targetSdk = 36
-        versionCode = 6
-        versionName = "2.2"
+        versionCode = 7
+        versionName = "2.3"
     }
     signingConfigs {
         create("release") {

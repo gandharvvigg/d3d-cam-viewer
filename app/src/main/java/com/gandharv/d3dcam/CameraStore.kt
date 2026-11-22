@@ -102,6 +102,10 @@ class CameraStore(ctx: Context) {
         get() = prefs.getBoolean("autoPip", true)
         set(v) { prefs.edit().putBoolean("autoPip", v).apply() }
 
+    var syncTimeOnStart: Boolean
+        get() = prefs.getBoolean("syncTimeOnStart", true)
+        set(v) { prefs.edit().putBoolean("syncTimeOnStart", v).apply() }
+
     var homeSsid: String
         get() = prefs.getString("home_ssid", "") ?: ""
         set(v) { prefs.edit().putString("home_ssid", v).apply() }

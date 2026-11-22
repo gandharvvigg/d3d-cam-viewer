@@ -103,7 +103,7 @@ class ViewerActivity : AppCompatActivity() {
         setupGestures()
         showOverlay()
         connect()
-        checkRecording()
+        checkRecording(syncTime = true)
     }
 
     private fun goImmersive() {
@@ -296,14 +296,24 @@ class ViewerActivity : AppCompatActivity() {
         b.playerView.player = null
     }
 
-    private fun checkRecording() {
+    /** Reads the recording state and, if enabled, sets the camera clock from the phone. */
+    private fun checkRecording(syncTime: Boolean = false) {
         lifecycleScope.launch {
-            val rec = withContext(Dispatchers.IO) {
-                runCatching { CameraConfig.open(cam.ip, cam.user, cam.pass).recordingState() }.getOrNull()
+            val doSync = syncTime && store.syncTimeOnStart
+            val (rec, synced) = withContext(Dispatchers.IO) {
+                val cfg = runCatching { CameraConfig.open(cam.ip, cam.user, cam.pass) }.getOrNull()
+                val r = cfg?.let { runCatching { it.recordingState() }.getOrNull() }
+                val s = if (doSync && cfg != null) runCatching { syncNow(cfg) }.getOrNull() else null
+                r to s
             }
             b.recBadge.visibility = if (rec?.enabled == true && !inPip) View.VISIBLE else View.GONE
+            if (doSync && synced != null && !synced.ok) {
+                Toast.makeText(this@ViewerActivity, "Couldn't set the camera's time", Toast.LENGTH_SHORT).show()
+            }
         }
     }
+
+    private fun syncNow(cfg: CameraConfig): Outcome = cfg.syncTime()
 
     // ---------------- controls ----------------
 
@@ -577,7 +587,7 @@ class ViewerActivity : AppCompatActivity() {
         store.get(cam.id)?.let { cam = it; b.camTitle.text = it.name }
         goImmersive()
         connect()
-        checkRecording()
+        checkRecording(syncTime = true)
     }
 
     override fun onWindowFocusChanged(hasFocus: Boolean) {

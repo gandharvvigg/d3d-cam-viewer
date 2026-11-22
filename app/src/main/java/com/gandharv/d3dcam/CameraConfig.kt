@@ -366,14 +366,24 @@ class CameraConfig(
         val tz = TimeZone.getDefault()
         if (hiBase != null) {
             val t = SimpleDateFormat("yyyy.MM.dd.HH.mm.ss", Locale.US).format(Date())
-            tried += "Hi3510" to hiOk(hi("setservertime", "&-time=$t&-timezone=${Net.enc(tz.id)}&-dstmode=off"))
+            val off = tz.rawOffset / 60000
+            val gmt = "GMT%s%02d:%02d".format(if (off >= 0) "+" else "-", Math.abs(off) / 60, Math.abs(off) % 60)
+            // Firmware differs in the time-zone names it accepts; try the common forms in turn.
+            val zones = listOf(tz.id, if (tz.id == "Asia/Kolkata") "Asia/Calcutta" else null, gmt).filterNotNull().distinct()
+            var ok = false
+            for (z in zones) {
+                if (hiOk(hi("setservertime", "&-time=$t&-timezone=${Net.enc(z)}&-dstmode=off"))) { ok = true; break }
+            }
+            if (!ok) ok = hiOk(hi("setservertime", "&-time=$t&-dstmode=off"))
+            tried += "Hi3510" to ok
         }
         if (vsBase != null) {
             val now = System.currentTimeMillis() / 1000
             val tzSec = -tz.rawOffset / 1000
             tried += "VStarcam" to vsOk(vs("set_datetime.cgi", "now=$now&tz=$tzSec&ntp_enable=1&ntp_svr=pool.ntp.org"))
         }
-        if (onvif != null && tried.none { it.second }) tried += "ONVIF" to onvif.syncTime()
+        // ONVIF as well, so the camera's standard clock is set even if the CGI ignored the zone.
+        if (onvif != null) tried += "ONVIF" to onvif.syncTime()
         return summarize("Time", tried)
     }
 

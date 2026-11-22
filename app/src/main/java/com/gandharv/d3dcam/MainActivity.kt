@@ -54,6 +54,8 @@ class MainActivity : AppCompatActivity() {
 
         b.autoStartSw.isChecked = store.autoStart
         b.autoStartSw.setOnCheckedChangeListener { _, v -> store.autoStart = v }
+        b.syncTimeSw.isChecked = store.syncTimeOnStart
+        b.syncTimeSw.setOnCheckedChangeListener { _, v -> store.syncTimeOnStart = v }
         b.autoPipSw.isChecked = store.autoPip
         b.autoPipSw.setOnCheckedChangeListener { _, v -> store.autoPip = v }
         b.versionText.text = "Version ${BuildConfig.VERSION_NAME}"

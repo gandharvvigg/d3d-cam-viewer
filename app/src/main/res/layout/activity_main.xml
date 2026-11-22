@@ -178,6 +178,12 @@
             android:text="Open the last camera full-screen when the app starts" />
 
         <com.google.android.material.materialswitch.MaterialSwitch
+            android:id="@+id/syncTimeSw"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Set the camera's clock from this phone when I open it" />
+
+        <com.google.android.material.materialswitch.MaterialSwitch
             android:id="@+id/autoPipSw"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
