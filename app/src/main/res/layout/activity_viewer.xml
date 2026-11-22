@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#000000"
+    android:fitsSystemWindows="true"
+    android:keepScreenOn="true"
+    android:orientation="vertical">
+
+    <FrameLayout
+        android:id="@+id/videoFrame"
+        android:layout_width="match_parent"
+        android:layout_height="240dp"
+        android:background="#000000">
+
+        <androidx.media3.ui.PlayerView
+            android:id="@+id/playerView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            app:resize_mode="fit"
+            app:surface_type="texture_view"
+            app:use_controller="false"
+            app:shutter_background_color="#000000" />
+
+        <ImageView
+            android:id="@+id/mjpegView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:scaleType="fitCenter"
+            android:visibility="gone" />
+
+        <TextView
+            android:id="@+id/statusText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom|start"
+            android:layout_margin="8dp"
+            android:background="#99000000"
+            android:padding="6dp"
+            android:textColor="#FFFFFF"
+            android:textSize="12sp" />
+    </FrameLayout>
+
+    <LinearLayout
+        android:id="@+id/controls"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#121212"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:padding="12dp">
+
+        <TextView
+            android:id="@+id/camTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            android:textColor="#BBBBBB" />
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+            <Space android:layout_width="76dp" android:layout_height="76dp" />
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnUp"
+                android:layout_width="76dp" android:layout_height="76dp"
+                android:insetTop="0dp" android:insetBottom="0dp"
+                android:text="▲" android:textSize="24sp" />
+            <Space android:layout_width="76dp" android:layout_height="76dp" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnLeft"
+                android:layout_width="76dp" android:layout_height="76dp"
+                android:insetTop="0dp" android:insetBottom="0dp"
+                android:text="◀" android:textSize="24sp" />
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnStop"
+                style="@style/Widget.Material3.Button.OutlinedButton"
+                android:layout_width="76dp" android:layout_height="76dp"
+                android:insetTop="0dp" android:insetBottom="0dp"
+                android:text="■" android:textSize="20sp" />
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnRight"
+                android:layout_width="76dp" android:layout_height="76dp"
+                android:insetTop="0dp" android:insetBottom="0dp"
+                android:text="▶" android:textSize="24sp" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+            <Space android:layout_width="76dp" android:layout_height="76dp" />
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnDown"
+                android:layout_width="76dp" android:layout_height="76dp"
+                android:insetTop="0dp" android:insetBottom="0dp"
+                android:text="▼" android:textSize="24sp" />
+            <Space android:layout_width="76dp" android:layout_height="76dp" />
+        </LinearLayout>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:layout_marginBottom="12dp"
+            android:text="Hold an arrow to pan / tilt"
+            android:textColor="#888888"
+            android:textSize="12sp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnSnap"
+                style="@style/Widget.Material3.Button.TonalButton"
+                android:layout_width="0dp" android:layout_height="wrap_content"
+                android:layout_weight="1" android:layout_marginEnd="4dp"
+                android:text="Photo" />
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnQuality"
+                style="@style/Widget.Material3.Button.TonalButton"
+                android:layout_width="0dp" android:layout_height="wrap_content"
+                android:layout_weight="1" android:layout_marginEnd="4dp"
+                android:text="HD/SD" />
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnMute"
+                style="@style/Widget.Material3.Button.TonalButton"
+                android:layout_width="0dp" android:layout_height="wrap_content"
+                android:layout_weight="1" android:layout_marginEnd="4dp"
+                android:text="Mute" />
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnReconnect"
+                style="@style/Widget.Material3.Button.TonalButton"
+                android:layout_width="0dp" android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Retry" />
+        </LinearLayout>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:text="Rotate the phone for full screen"
+            android:textColor="#666666"
+            android:textSize="12sp" />
+    </LinearLayout>
+</LinearLayout>
