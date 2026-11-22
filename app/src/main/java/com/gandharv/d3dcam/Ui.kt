@@ -65,6 +65,19 @@ object Ui {
         return layout to edit
     }
 
+    /** Pads [v] by the system bars / cutout so content isn't drawn under them (edge-to-edge, Android 15+). */
+    fun applySystemBarPadding(v: View) {
+        androidx.core.view.ViewCompat.setOnApplyWindowInsetsListener(v) { view, insets ->
+            val b = insets.getInsets(
+                androidx.core.view.WindowInsetsCompat.Type.systemBars() or
+                        androidx.core.view.WindowInsetsCompat.Type.displayCutout() or
+                        androidx.core.view.WindowInsetsCompat.Type.ime()
+            )
+            view.setPadding(b.left, b.top, b.right, b.bottom)
+            insets
+        }
+    }
+
     fun full(v: View, topDp: Int = 6): View {
         v.layoutParams = LinearLayout.LayoutParams(
             ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT

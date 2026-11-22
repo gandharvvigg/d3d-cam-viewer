@@ -5,14 +5,14 @@ plugins {
 
 android {
     namespace = "com.gandharv.d3dcam"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
-        applicationId = "com.gandharv.d3dcam"
+        applicationId = "com.gandharv.hicamviewer"
         minSdk = 24
-        targetSdk = 34
-        versionCode = 5
-        versionName = "2.1"
+        targetSdk = 36
+        versionCode = 6
+        versionName = "2.2"
     }
     signingConfigs {
         create("release") {

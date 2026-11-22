@@ -41,6 +41,7 @@ class MainActivity : AppCompatActivity() {
 
         b = ActivityMainBinding.inflate(layoutInflater)
         setContentView(b.root)
+        Ui.applySystemBarPadding(b.root)
 
         b.scanBtn.setOnClickListener { scan() }
         b.setupBtn.setOnClickListener { startActivity(Intent(this, WifiSetupActivity::class.java)) }

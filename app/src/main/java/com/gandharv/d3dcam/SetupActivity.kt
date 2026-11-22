@@ -56,7 +56,6 @@ class SetupActivity : AppCompatActivity() {
     private fun buildUi() {
         val c = this
         val root = Ui.column(c, 20)
-        root.fitsSystemWindows = true
 
         root.addView(TextView(c).apply { text = "Camera settings"; textSize = 24f; setTypeface(typeface, android.graphics.Typeface.BOLD) })
         status = Ui.note(c, "Connecting to $ip…")
@@ -175,7 +174,7 @@ class SetupActivity : AppCompatActivity() {
         log = Ui.note(c, "")
         root.addView(log)
 
-        setContentView(ScrollView(c).apply { addView(root); isFillViewport = true })
+        setContentView(ScrollView(c).apply { addView(root); isFillViewport = true; Ui.applySystemBarPadding(this) })
     }
 
     private fun slider() = Slider(this).apply {
@@ -206,7 +205,7 @@ class SetupActivity : AppCompatActivity() {
             infoText.text = info.entries.joinToString("\n") { "${it.key}: ${it.value}" }
             if (cam.protocols.isEmpty()) {
                 status.text = "Connected to $ip, but the camera didn't answer any settings command. " +
-                        "Check the username/password. Some D3D firmware only allows settings through the D3DCam app."
+                        "Check the username/password. Some firmware only allows settings through the camera maker's own app."
                 setEnabledAll(true)
                 return@launch
             }

@@ -18,7 +18,7 @@ import java.net.URL
 import java.nio.ByteBuffer
 
 /**
- * Downloads a recording from the camera and saves it to the phone's gallery (Movies/D3DCam).
+ * Downloads a recording from the camera and saves it to the phone's gallery (Movies/HiCam).
  * HXVS ".264" files are re-packaged into a standard MP4 (video only) so any player can open them.
  */
 object ClipSaver {
@@ -197,14 +197,14 @@ object ClipSaver {
             val v = ContentValues().apply {
                 put(MediaStore.Video.Media.DISPLAY_NAME, name)
                 put(MediaStore.Video.Media.MIME_TYPE, mime)
-                put(MediaStore.Video.Media.RELATIVE_PATH, Environment.DIRECTORY_MOVIES + "/D3DCam")
+                put(MediaStore.Video.Media.RELATIVE_PATH, Environment.DIRECTORY_MOVIES + "/HiCam")
             }
             val uri = ctx.contentResolver.insert(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, v)
                 ?: throw IllegalStateException("Couldn't create file")
             ctx.contentResolver.openOutputStream(uri)!!.use { out -> file.inputStream().use { it.copyTo(out) } }
-            "Movies/D3DCam/$name"
+            "Movies/HiCam/$name"
         } else {
-            val dir = File(ctx.getExternalFilesDir(Environment.DIRECTORY_MOVIES), "D3DCam").apply { mkdirs() }
+            val dir = File(ctx.getExternalFilesDir(Environment.DIRECTORY_MOVIES), "HiCam").apply { mkdirs() }
             val f = File(dir, name)
             file.copyTo(f, overwrite = true)
             f.absolutePath

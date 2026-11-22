@@ -38,21 +38,29 @@ jobs:
           KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
         run: |
           chmod +x gradlew
-          ./gradlew assembleRelease --no-daemon --stacktrace
+          ./gradlew assembleRelease bundleRelease --no-daemon --stacktrace
 
-      - name: Rename APK
-        run: cp app/build/outputs/apk/release/app-release.apk D3DCamViewer.apk
+      - name: Collect outputs
+        run: |
+          cp app/build/outputs/apk/release/app-release.apk HiCamViewer.apk
+          cp app/build/outputs/bundle/release/app-release.aab HiCamViewer-playstore.aab
 
       - uses: actions/upload-artifact@v4
         with:
-          name: D3DCamViewer
-          path: D3DCamViewer.apk
+          name: HiCamViewer
+          path: |
+            HiCamViewer.apk
+            HiCamViewer-playstore.aab
 
       - name: Publish release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v2.1.${{ github.run_number }}
-          name: D3D Cam Viewer v2.1.${{ github.run_number }}
-          body: Tap D3DCamViewer.apk below to download, then open it to install.
-          files: D3DCamViewer.apk
+          tag_name: v2.2.${{ github.run_number }}
+          name: HiCam Viewer v2.2.${{ github.run_number }}
+          body: |
+            **HiCamViewer.apk** — tap to download and install on your phone.
+            **HiCamViewer-playstore.aab** — upload this file to Google Play Console.
+          files: |
+            HiCamViewer.apk
+            HiCamViewer-playstore.aab
           make_latest: true

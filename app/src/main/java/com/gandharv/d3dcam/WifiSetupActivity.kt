@@ -58,7 +58,6 @@ class WifiSetupActivity : AppCompatActivity() {
     private fun buildUi() {
         val c = this
         val root = Ui.column(c, 20)
-        root.fitsSystemWindows = true
         val existing = ip != null
 
         root.addView(TextView(c).apply {
@@ -134,7 +133,7 @@ class WifiSetupActivity : AppCompatActivity() {
         doneBox.addView(Ui.full(Ui.button(c, "Find my camera on home Wi‑Fi") { goFind() }))
         root.addView(doneBox)
 
-        setContentView(ScrollView(c).apply { addView(root) })
+        setContentView(ScrollView(c).apply { addView(root); Ui.applySystemBarPadding(this) })
     }
 
     private fun user() = userEdit.text.toString().trim().ifEmpty { "admin" }

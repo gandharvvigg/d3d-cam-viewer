@@ -492,17 +492,17 @@ class ViewerActivity : AppCompatActivity() {
     }
 
     private fun saveBitmap(bmp: Bitmap): String {
-        val name = "D3DCam_" + SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(Date()) + ".jpg"
+        val name = "HiCam_" + SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(Date()) + ".jpg"
         return if (Build.VERSION.SDK_INT >= 29) {
             val v = ContentValues().apply {
                 put(MediaStore.Images.Media.DISPLAY_NAME, name)
                 put(MediaStore.Images.Media.MIME_TYPE, "image/jpeg")
-                put(MediaStore.Images.Media.RELATIVE_PATH, Environment.DIRECTORY_PICTURES + "/D3DCam")
+                put(MediaStore.Images.Media.RELATIVE_PATH, Environment.DIRECTORY_PICTURES + "/HiCam")
             }
             val uri = contentResolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, v)
                 ?: throw IllegalStateException("insert failed")
             contentResolver.openOutputStream(uri)!!.use { bmp.compress(Bitmap.CompressFormat.JPEG, 92, it) }
-            "Pictures/D3DCam"
+            "Pictures/HiCam"
         } else {
             val f = File(getExternalFilesDir(Environment.DIRECTORY_PICTURES), name)
             f.outputStream().use { bmp.compress(Bitmap.CompressFormat.JPEG, 92, it) }

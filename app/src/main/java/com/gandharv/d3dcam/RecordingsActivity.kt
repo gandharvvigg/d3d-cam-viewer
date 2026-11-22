@@ -45,7 +45,6 @@ class RecordingsActivity : AppCompatActivity() {
         cam = store.get(intent.getStringExtra("camId")) ?: run { finish(); return }
         val c = this
         val root = Ui.column(c, 16)
-        root.fitsSystemWindows = true
         root.addView(TextView(c).apply {
             text = "Recordings · ${cam.name}"; textSize = 22f; setTypeface(typeface, Typeface.BOLD)
         })
@@ -64,7 +63,9 @@ class RecordingsActivity : AppCompatActivity() {
         }
         root.addView(list, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0, 1f))
         root.addView(Ui.note(c, "Tap to play · long-press to save to your phone"))
-        setContentView(root)
+        val frame = android.widget.FrameLayout(c).apply { addView(root) }
+        Ui.applySystemBarPadding(frame)
+        setContentView(frame)
         load()
     }
 

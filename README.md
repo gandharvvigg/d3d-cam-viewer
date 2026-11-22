@@ -1,6 +1,8 @@
-# D3D Cam Viewer
+# HiCam Viewer
 
-Android app to find, view and control a D3D Security Wi‑Fi camera (e.g. D8801) on your local Wi‑Fi.
+Android app to find, view, record and set up HiChip-based Wi‑Fi cameras (for example D3D Security D8801) on your local Wi‑Fi.
+
+Privacy policy: [PRIVACY.md](PRIVACY.md)
 
 - Scans the Wi‑Fi network (port scan + ONVIF discovery) and highlights the camera
 - Live video over RTSP (auto-detects the stream path, ONVIF stream lookup, HD/SD switch)
@@ -12,6 +14,6 @@ Android app to find, view and control a D3D Security Wi‑Fi camera (e.g. D8801)
 - Device tools: device info, sync time with phone, restart
 - Finds the camera again automatically if the router gives it a new IP
 
-Works on the local network only. Remote viewing over the internet still needs the D3DCam app.
+Works on the local network only. Remote viewing over the internet is not supported.
 
 The APK is built by GitHub Actions — download it from the latest Release.
