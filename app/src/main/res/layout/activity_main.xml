@@ -115,6 +115,21 @@
             android:layout_marginTop="16dp"
             android:text="View camera" />
 
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/setupBtn"
+            style="@style/Widget.Material3.Button.OutlinedButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="Set up a new camera (Wi‑Fi)" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/settingsBtn"
+            style="@style/Widget.Material3.Button.OutlinedButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Camera settings" />
+
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

@@ -2,6 +2,7 @@ package com.gandharv.d3dcam
 
 import android.annotation.SuppressLint
 import android.content.ContentValues
+import android.content.Intent
 import android.content.res.Configuration
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
@@ -62,6 +63,7 @@ class ViewerActivity : AppCompatActivity() {
     private var lastFrame: Bitmap? = null
     private var ptz: Ptz? = null
     private var muted = false
+    private var relocated = false
 
     private val ptzDispatcher = Executors.newSingleThreadExecutor().asCoroutineDispatcher()
 
@@ -112,6 +114,19 @@ class ViewerActivity : AppCompatActivity() {
             Net.ALL_PORTS.map { p -> async { if (Net.portOpen(ip, p, 1200)) p else null } }.awaitAll().filterNotNull()
         }
         if (open.isEmpty() && customUrl.isEmpty()) {
+            if (!relocated && Scanner.onWifi(this)) {
+                // The router may have given the camera a new IP — look for it.
+                relocated = true
+                status("Camera not at $ip — searching your Wi‑Fi…")
+                val best = try { Scanner.findBestCamera(this, user, pass) } catch (e: Exception) { null }
+                if (best != null && best.ip != ip) {
+                    ip = best.ip
+                    prefs.edit().putString("ip", ip).apply()
+                    b.camTitle.text = "Camera $ip"
+                    doConnect()
+                    return
+                }
+            }
             status("Can't reach $ip. Is the phone on the same Wi‑Fi and the camera powered?")
             return
         }
@@ -295,6 +310,11 @@ class ViewerActivity : AppCompatActivity() {
         }
 
         b.btnSnap.setOnClickListener { takePhoto() }
+
+        b.btnSettings.setOnClickListener {
+            startActivity(Intent(this, SetupActivity::class.java)
+                .putExtra("ip", ip).putExtra("user", user).putExtra("pass", pass))
+        }
     }
 
     private fun alternateStream(u: String): String? {
@@ -383,6 +403,7 @@ class ViewerActivity : AppCompatActivity() {
 
     override fun onRestart() {
         super.onRestart()
+        pass = prefs.getString("pass", pass) ?: pass
         connect()
     }
 

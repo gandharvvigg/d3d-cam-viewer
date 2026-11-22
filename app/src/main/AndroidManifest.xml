@@ -27,5 +27,7 @@
             android:name=".ViewerActivity"
             android:exported="false"
             android:configChanges="orientation|screenSize|screenLayout|keyboardHidden|smallestScreenSize" />
+        <activity android:name=".SetupActivity" android:exported="false" />
+        <activity android:name=".WifiSetupActivity" android:exported="false" />
     </application>
 </manifest>

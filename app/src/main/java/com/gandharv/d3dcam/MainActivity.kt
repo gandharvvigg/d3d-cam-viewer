@@ -31,8 +31,43 @@ class MainActivity : AppCompatActivity() {
 
         b.scanBtn.setOnClickListener { scan() }
         b.connectBtn.setOnClickListener { openViewer(b.ipInput.text.toString().trim()) }
+        b.setupBtn.setOnClickListener {
+            saveLogin()
+            startActivity(Intent(this, WifiSetupActivity::class.java))
+        }
+        b.settingsBtn.setOnClickListener {
+            val ip = b.ipInput.text.toString().trim()
+            if (ip.isEmpty()) {
+                Toast.makeText(this, "Scan first, or type the camera's IP address", Toast.LENGTH_SHORT).show()
+            } else {
+                saveLogin()
+                prefs.edit().putString("ip", ip).apply()
+                startActivity(Intent(this, SetupActivity::class.java)
+                    .putExtra("ip", ip).putExtra("user", user()).putExtra("pass", pass()))
+            }
+        }
 
-        if (savedInstanceState == null && prefs.getString("ip", "").isNullOrEmpty()) scan()
+        if (savedInstanceState == null &&
+            (prefs.getString("ip", "").isNullOrEmpty() || intent.getBooleanExtra("autoscan", false))) scan()
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        if (intent.getBooleanExtra("autoscan", false)) {
+            b.userInput.setText(prefs.getString("user", "admin"))
+            b.passInput.setText(prefs.getString("pass", "admin"))
+            scan()
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        // The password may have been changed in Camera settings.
+        prefs.getString("pass", null)?.let { if (it != pass()) b.passInput.setText(it) }
+    }
+
+    private fun saveLogin() {
+        prefs.edit().putString("user", user()).putString("pass", pass()).apply()
     }
 
     private fun user() = b.userInput.text.toString().trim().ifEmpty { "admin" }
@@ -81,8 +116,13 @@ class MainActivity : AppCompatActivity() {
                 if (f.snapshotUrl != null) add("picture ✓")
                 if (554 in f.ports || 10554 in f.ports) add("RTSP video")
                 if (f.onvif) add("ONVIF")
+                if (f.announced) add("announced itself")
             }
-            val title = if (f.likelyCamera) "📷  ${f.ip}  — likely camera" else f.ip
+            val title = when {
+                f.model != null -> "📷  ${f.ip}  — ${f.model}"
+                f.likelyCamera -> "📷  ${f.ip}  — likely camera"
+                else -> f.ip
+            }
             val sub = if (tags.isNotEmpty()) tags.joinToString(" · ")
             else "Open ports: ${f.ports.joinToString()}"
             val btn = MaterialButton(this, null, com.google.android.material.R.attr.materialButtonOutlinedStyle).apply {

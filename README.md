@@ -7,6 +7,10 @@ Android app to find, view and control a D3D Security Wi‑Fi camera (e.g. D8801)
 - Falls back to refreshing JPEG pictures if the camera has no RTSP stream
 - Pan/tilt by holding the arrow buttons (ONVIF, Hi3510 and VStarcam-style CGI)
 - Save a photo to Pictures/D3DCam, mute audio, full screen in landscape
+- Camera setup: put a new/reset camera on Wi‑Fi (via its hotspot), change Wi‑Fi, change password
+- Picture settings: brightness/contrast/colour, flip/mirror, night vision, video quality
+- Device tools: device info, sync time with phone, restart
+- Finds the camera again automatically if the router gives it a new IP
 
 Works on the local network only. Remote viewing over the internet still needs the D3DCam app.
 
